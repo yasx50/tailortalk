@@ -132,6 +132,28 @@ def draw_graphs(api_url, query):
 
                 # Display Pie Chart in Streamlit
                 st.pyplot(fig_pie)
+            elif context=="box_plot":
+                values = data.get("y_axis", [])
+                x_labels = data.get("x_axis", [])
+
+                if not values or not x_labels:
+                    st.error("No data available for the box plot.")
+                    return
+
+                # Convert single values into multiple sample points for each class
+                values = [
+                    [v + i * 2 for i in range(10)] for v in values
+                ]  # Simulating 10 sample points per class
+
+                fig, ax = plt.subplots()
+
+                ax.boxplot(values, vert=True, patch_artist=True)
+
+                ax.set_xticks(range(1, len(x_labels) + 1))  # Box plot positions start from 1
+                ax.set_xticklabels(x_labels)
+
+                ax.set_title(data.get("explanation", "Box Plot"))
+                ax.set_ylabel("Fare Distribution")
 
 
         
