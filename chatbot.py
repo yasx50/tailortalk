@@ -55,6 +55,7 @@ def detect_chart_type(query: str):
 def draw_graphs(api_url, query):
     response = requests.get(api_url + query)
     context = detect_chart_type(query)
+    
     print(context)
 
     if response.status_code == 200:
