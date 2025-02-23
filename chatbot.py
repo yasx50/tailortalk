@@ -6,8 +6,8 @@ import difflib
 
 import json  
 
-# API_URL = "https://tailortalk-1gne.onrender.com/req/"  
-API_URL = "http://127.0.0.1:8000/req/"  
+API_URL = "https://tailortalk-1gne.onrender.com/req/"  
+# API_URL = "http://127.0.0.1:8000/req/"  
 
 st.title(" Dive into the Story of the Unsinkable Ship 🚢")
 
