@@ -5,7 +5,7 @@ import plotly.express as px
 
 import json  
 
-API_URL = "https://tailortalk-1gne.onrender.com/"  
+API_URL = "https://tailortalk-1gne.onrender.com/req/"  
 
 st.title(" Dive into the Story of the Unsinkable Ship 🚢")
 
@@ -26,7 +26,7 @@ def show_response(api_url,query):
         else:
             st.error(f"Failed to fetch data. Status Code: {response.status_code}")
             break
-# show_response(API_URL,query)
+
 
 def detect_chart_type(query: str):
     query = query.lower()
