@@ -2,10 +2,12 @@ import streamlit as st
 import requests
 import matplotlib.pyplot as plt
 import plotly.express as px
+import difflib
 
 import json  
 
-API_URL = "https://tailortalk-1gne.onrender.com/req/"  
+# API_URL = "https://tailortalk-1gne.onrender.com/req/"  
+API_URL = "http://127.0.0.1:8000/req/"  
 
 st.title(" Dive into the Story of the Unsinkable Ship 🚢")
 
@@ -28,27 +30,34 @@ def show_response(api_url,query):
             break
 
 
+
+
 def detect_chart_type(query: str):
-    query = query.lower()
+    query = query.lower().strip()  # Convert to lowercase & remove extra spaces
+
+    # Define chart types and relevant keywords
     chart_keywords = {
-        "histogram": ["histogram Display show draw ", "histogram age distribution  ","histogram   "],
-        "bar_chart": ["bar chart Display show draw ", "bar chart passengers by port distribution   "],
-        "scatter_plot": ["scatter plot Display show draw ", "scatter plot age vs fare "," scatter plot man vs woman"],
-        "box_plot": ["box plot Display show draw", "fare distribution  "],
-        "pie_chart": ["pie chart Display show draw ", "pie chart  distribution ","pie chart peoples of titanic  "],
+        "histogram": ["histogram", "age distribution"],
+        "bar_chart": ["bar chart", "passengers by port", "categorical distribution"],
+        "scatter_plot": ["scatter plot", "age vs fare", "man vs woman", "relationship"],
+        "box_plot": ["box plot", "fare distribution", "summary statistics"],
+        "pie_chart": ["pie chart", "percentage", "proportion", "titanic"],
     }
 
+    # Tokenize the query (split into words for better matching)
+    words = set(query.split())
+
+    # Check for exact matches first
     for chart_type, keywords in chart_keywords.items():
         if any(keyword in query for keyword in keywords):
             return chart_type
 
+    # Use fuzzy matching if no exact match is found
+    for chart_type, keywords in chart_keywords.items():
+        if any(difflib.get_close_matches(word, keywords, cutoff=0.7) for word in words):
+            return chart_type
+
     return None  # No chart detected
-
-
-# show_response(API_URL,query)
-
-
-
 
 
 
@@ -60,8 +69,7 @@ def draw_graphs(api_url, query):
 
     if response.status_code == 200:
         data = response.json() if isinstance(response.json(), dict) else json.loads(response.json())
-        st.write("Raw API Response:", data)  # Debugging: Show raw data
-        st.write(response.headers.get("Content-Type",""))
+        
         try:
            
             if context=="histogram":
@@ -128,8 +136,9 @@ def draw_graphs(api_url, query):
 
                 # Create a Pie Chart
                 fig_pie, ax_pie = plt.subplots()
+                
                 ax_pie.pie(y_values, labels=x_values, autopct="%1.1f%%", colors=plt.cm.Paired.colors, startangle=90)
-                ax_pie.set_title(f"{query}")
+                ax_pie.set_title(data.get("explanation"))
 
                 # Display Pie Chart in Streamlit
                 st.pyplot(fig_pie)
