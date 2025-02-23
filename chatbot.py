@@ -31,11 +31,11 @@ def show_response(api_url,query):
 def detect_chart_type(query: str):
     query = query.lower()
     chart_keywords = {
-        "histogram": ["histogram Display show draw ", "histogram age distribution Display ","histogram  Display "],
-        "bar_chart": ["bar chart Display show draw", "bar chart passengers by port distribution Show draw Display "],
-        "scatter_plot": ["scatter plot Display show draw", "scatter plot age vs fare show draw"," scatter plot man vs woman show draw"],
-        "box_plot": ["box plot Display show draw", "fare distribution show draw"],
-        "pie_chart": ["pie chart Display show draw", "pie chart  distribution show draw","pie chart peoples of titanic show draw"],
+        "histogram": ["histogram Display show draw ", "histogram age distribution  ","histogram   "],
+        "bar_chart": ["bar chart Display show draw ", "bar chart passengers by port distribution   "],
+        "scatter_plot": ["scatter plot Display show draw ", "scatter plot age vs fare "," scatter plot man vs woman"],
+        "box_plot": ["box plot Display show draw", "fare distribution  "],
+        "pie_chart": ["pie chart Display show draw ", "pie chart  distribution ","pie chart peoples of titanic  "],
     }
 
     for chart_type, keywords in chart_keywords.items():
