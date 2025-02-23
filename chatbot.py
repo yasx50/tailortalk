@@ -5,7 +5,7 @@ import plotly.express as px
 
 import json  
 
-API_URL = "http://localhost:8000/req/"  
+API_URL = "https://tailortalk-1gne.onrender.com/"  
 
 st.title(" Dive into the Story of the Unsinkable Ship 🚢")
 
