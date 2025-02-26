@@ -56,7 +56,7 @@ def show_response(api_url, query):
     with response_container:
         if response.status_code == 200:
             data = response.json()  
-            st.write_h( query)
+            st.write(query)
             st.write(data)
         else:
             st.error(f"Failed to fetch data. Status Code: {response.status_code}")
