@@ -3,183 +3,216 @@ import requests
 import matplotlib.pyplot as plt
 import plotly.express as px
 import difflib
+import json
+import re
 
-import json  
+# Set page configuration for better layout
+st.set_page_config(layout="centered", page_title="Titanic Story Explorer")
 
-API_URL = "https://tailortalk-1gne.onrender.com/req/"  
-# API_URL = "http://127.0.0.1:8000/req/"  
+# API_URL = "https://tailortalk-1gne.onrender.com/req/"  
+API_URL = "http://127.0.0.1:8000/req/"  
 
-st.title(" Dive into the Story of the Unsinkable Ship 🚢")
+st.title("Dive into the Story of the Unsinkable Ship 🚢")
 
+# Create a container for the input section
+input_container = st.container()
 
-query=st.text_input("Asq Question related to Titanic Ship ")
-
-
-def show_response(api_url,query):
-    while(query):
-        response = requests.get(API_URL+query)
-        
-        if response.status_code == 200:
-            data = response.json()  
-            st.write(f"### {query}:")
-            st.write(data)
-            break
-            #st.json(data)  # Display JSON response
-        else:
-            st.error(f"Failed to fetch data. Status Code: {response.status_code}")
-            break
-
-
-
+with input_container:
+    query = st.text_input("Ask Question related to Titanic Ship", key="query")
 
 def detect_chart_type(query: str):
-    query = query.lower().strip()  # Convert to lowercase & remove extra spaces
+    if not query:
+        return None
+        
+    query = query.lower().strip()  # Convert input to lowercase and remove extra spaces
 
-    # Define chart types and relevant keywords
+    # Dictionary mapping chart types to keywords
     chart_keywords = {
-        "histogram": ["histogram", "age distribution"],
-        "bar_chart": ["bar chart", "passengers by port", "categorical distribution"],
-        "scatter_plot": ["scatter plot", "age vs fare", "man vs woman", "relationship"],
-        "box_plot": ["box plot", "fare distribution", "summary statistics"],
-        "pie_chart": ["pie chart", "percentage", "proportion", "titanic"],
+        "histogram": ["histogram", "age distribution", "passenger ages"],
+        "bar_chart": ["bar chart", "passengers by port", "port distribution"],
+        "scatter_plot": ["scatter plot", "age vs fare", "man vs woman"],
+        "box_plot": ["box plot", "fare distribution"],
+        "pie_chart": ["pie chart", "class distribution", "passenger class"]
     }
 
-    # Tokenize the query (split into words for better matching)
-    words = set(query.split())
-
-    # Check for exact matches first
+    # Check if the query contains any exact match for a chart type
     for chart_type, keywords in chart_keywords.items():
-        if any(keyword in query for keyword in keywords):
-            return chart_type
+        for keyword in keywords:
+            # Use regex to match whole words only, avoiding partial matches
+            if re.search(rf"\b{re.escape(keyword)}\b", query):
+                return chart_type
 
-    # Use fuzzy matching if no exact match is found
-    for chart_type, keywords in chart_keywords.items():
-        if any(difflib.get_close_matches(word, keywords, cutoff=0.7) for word in words):
-            return chart_type
+    return None  # Return None if no chart type is detected
 
-    return None  # No chart detected
+# Create a container for the response section
+response_container = st.container()
 
-
+def show_response(api_url, query):
+    if not query:
+        return
+        
+    response = requests.get(api_url + query)
+    
+    with response_container:
+        if response.status_code == 200:
+            data = response.json()  
+            st.write(f"### Response for: {query}")
+            st.write(data)
+        else:
+            st.error(f"Failed to fetch data. Status Code: {response.status_code}")
 
 def draw_graphs(api_url, query):
+    if not query:
+        return
+        
     response = requests.get(api_url + query)
     context = detect_chart_type(query)
     
     print(context)
+    print("Raw API Response:", repr(response.text))
 
-    if response.status_code == 200:
-        data = response.json() if isinstance(response.json(), dict) else json.loads(response.json())
-        
-        try:
-           
-            if context=="histogram":
-                # Extract values correctly
-                age_bins = data.get("x_axis", [])  # X-axis values
-                frequencies = data.get("y_axis", [])  # Y-axis values
-                # Create the histogram
-                fig, ax = plt.subplots()
-                st.write(f"Explanation: {data.get('explanation' )}")
-                ax.bar(age_bins, frequencies, width=1.0, edgecolor='blue')
-                ax.set_xlabel("X-axis (Bins)")
-                ax.set_ylabel("Y-axis (Frequency)")
-                ax.set_title(f"{context}")
+    with response_container:
+        if response.status_code == 200:
+            try:
+                data = response.json() if isinstance(response.json(), dict) else json.loads(response.json())
+                
+                # Use expander for raw data to keep UI clean
+                with st.expander("View Raw API Response"):
+                    st.write(data)
+                    st.write(response.headers.get("Content-Type", ""))
+                
+                st.subheader(f"Visualization: {context.replace('_', ' ').title()}")
+                
+                if context == "histogram":
+                    # Extract values correctly
+                    age_bins = data.get("x_axis", [])  # X-axis values
+                    frequencies = data.get("y_axis", [])  # Y-axis values
+                    # Create the histogram
+                    fig, ax = plt.subplots(figsize=(10, 6))
+                    ax.bar(age_bins, frequencies, width=1.0, edgecolor='black')
+                    ax.set_xlabel("X-axis (Bins)")
+                    ax.set_ylabel("Y-axis (Frequency)")
+                    ax.set_title(f"{context.replace('_', ' ').title()}")
 
-                # Display the plot in Streamlit
-                st.pyplot(fig)
-                st.write(data["mean"])
-            elif context=="scatter_plot":
-                x_values = data.get("x_axis", [])  
-                y_values = data.get("y_axis", [])  
+                    # Display the plot in Streamlit
+                    st.pyplot(fig)
+                    
+                    # Display explanation in an info box
+                    st.info(f"Explanation: {data.get('explanation', [])}")
+                    st.write(f"Mean: {data.get('mean', 'N/A')}")
+                    
+                elif context == "scatter_plot":
+                    x_values = data.get("x_axis", [])  
+                    y_values = data.get("y_axis", [])  
 
-                # Create Scatter Plot
-                fig, ax = plt.subplots()
-                ax.scatter(x_values, y_values, color='blue', edgecolor='black')
-                st.write(f"Eplanation: {data.get('explanation' )}")
+                    # Create Scatter Plot
+                    fig, ax = plt.subplots(figsize=(10, 6))
+                    ax.scatter(x_values, y_values, color='blue', edgecolor='black')
+                    ax.set_xlabel("X-axis (Bins)")
+                    ax.set_ylabel("Y-axis (Frequency)")
+                    ax.set_title(f"{context.replace('_', ' ').title()}")
+                    ax.grid(True)
 
-                ax.set_xlabel("X-axis (Bins)")
-                ax.set_ylabel("Y-axis (Frequency)")
-                ax.set_title(f" {context}")
-                ax.grid(True)
+                    # Display the plot in Streamlit
+                    st.pyplot(fig)
 
-                # Display the plot in Streamlit
-                st.pyplot(fig)
-
-                # Show additional statistical data
-                st.write(f"Mean: {data.get('mean', 'N/A')}")
-                st.write(f"Median: {data.get('median', 'N/A')}")
-                st.write(f"Mode: {data.get('mode', 'N/A')}")
-            elif context=="bar_chart":
+                    # Show additional statistical data in a nice format
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.metric("Mean", data.get('mean', 'N/A'))
+                    with col2:
+                        st.metric("Median", data.get('median', 'N/A'))
+                    with col3:
+                        st.metric("Mode", data.get('mode', 'N/A'))
+                    
+                    # Display explanation in an info box
+                    st.info(f"Explanation: {data.get('explanation', [])}")
+                    
+                elif context == "bar_chart":
                     x_values = data.get("x_axis", [])
                     y_values = data.get("y_axis", [])
-                    # Create a Matplotlib figure with two subplots (Scatter Plot + Bar Chart)
-                    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
-
-                    st.write(f"Explanation: {data.get('explanation', 'No explanation available')}")
-                    # Scatter Plot
-                    fig, ax = plt.subplots(figsize=(8, 5))
+                    
+                    # Create a Matplotlib figure for Bar Chart
+                    fig, ax = plt.subplots(figsize=(10, 6))
                     ax.bar(x_values, y_values, color='green', edgecolor='black')
                     ax.set_xlabel("X-axis (Categories)")
                     ax.set_ylabel("Y-axis (Values)")
-                    ax.set_title(f" {context}")
+                    ax.set_title(f"{context.replace('_', ' ').title()}")
                     ax.grid(axis="y")
 
                     # Display the plots in Streamlit
                     st.pyplot(fig)
-            elif context=="pie_chart":
-                x_values = data.get("x_axis", [])
-                y_values = data.get("y_axis", [])
+                    
+                    # Display explanation in an info box
+                    st.info(f"Explanation: {data.get('explanation', [])}")
+                    
+                elif context == "pie_chart":
+                    x_values = data.get("x_axis", [])
+                    y_values = data.get("y_axis", [])
 
-                # Create a Matplotlib figure for Bar Chart
-                
-                # Display Bar Chart in Streamlit
-                
+                    # Create a Pie Chart
+                    fig_pie, ax_pie = plt.subplots(figsize=(10, 6))
+                    ax_pie.pie(y_values, labels=x_values, autopct="%1.1f%%", colors=plt.cm.Paired.colors, startangle=90)
+                    ax_pie.set_title(f"{context.replace('_', ' ').title()}")
 
-                # Create a Pie Chart
-                fig_pie, ax_pie = plt.subplots()
-                
-                ax_pie.pie(y_values, labels=x_values, autopct="%1.1f%%", colors=plt.cm.Paired.colors, startangle=90)
-                ax_pie.set_title(data.get("explanation"))
+                    # Display Pie Chart in Streamlit
+                    st.pyplot(fig_pie)
+                    
+                    # Display explanation in an info box
+                    st.info(f"Explanation: {data.get('explanation', [])}")
+                    
+                elif context == "box_plot":
+                    values = data.get("y_axis", [])
+                    x_labels = data.get("x_axis", [])
 
-                # Display Pie Chart in Streamlit
-                st.pyplot(fig_pie)
-            elif context=="box_plot":
-                values = data.get("y_axis", [])
-                x_labels = data.get("x_axis", [])
+                    if not values or not x_labels:
+                        st.error("No data available for the box plot.")
+                        return
 
-                if not values or not x_labels:
-                    st.error("No data available for the box plot.")
-                    return
+                    # Convert single values into multiple sample points for each class
+                    values = [
+                        [v + i * 2 for i in range(10)] for v in values
+                    ]  # Simulating 10 sample points per class
 
-                # Convert single values into multiple sample points for each class
-                values = [
-                    [v + i * 2 for i in range(10)] for v in values
-                ]  # Simulating 10 sample points per class
-
-                fig, ax = plt.subplots()
-
-                ax.boxplot(values, vert=True, patch_artist=True)
-
-                ax.set_xticks(range(1, len(x_labels) + 1))  # Box plot positions start from 1
-                ax.set_xticklabels(x_labels)
-
-                ax.set_title(data.get("explanation", "Box Plot"))
-                ax.set_ylabel("Fare Distribution")
-
-
-        
-        except Exception as e:
-            st.write(e)
-
-    
-
-
-
-    
-    
-
-if query:
-    if detect_chart_type(query)!=None:
-        draw_graphs(API_URL,query)
-    else:
-        show_response(API_URL,query)
+                    fig, ax = plt.subplots(figsize=(10, 6))
+                    ax.boxplot(values, vert=True, patch_artist=True)
+                    ax.set_xticks(range(1, len(x_labels) + 1))  # Box plot positions start from 1
+                    ax.set_xticklabels(x_labels)
+                    ax.set_title(f"{context.replace('_', ' ').title()}")
+                    ax.set_ylabel("Fare Distribution")
+                    
+                    # Display the plot
+                    st.pyplot(fig)
+                    
+                    # Display explanation in an info box
+                    st.info(f"Explanation: {data.get('explanation', [])}")
             
+            except Exception as e:
+                st.error(f"Error processing data: {e}")
+
+def choose():
+    if not query:
+        with response_container:
+            st.warning("Please enter a question about the Titanic.")
+        return
+        
+    # Clear previous results when submitting a new query
+    if 'previous_response' in st.session_state:
+        response_container.empty()
+    
+    chart_type = detect_chart_type(query)
+    
+    if chart_type:
+        draw_graphs(API_URL, query)
+    else:
+        show_response(API_URL, query)
+    
+    # Mark that we've shown a response
+    st.session_state.previous_response = True
+
+# Create the button within the input container to ensure correct order
+with input_container:
+    st.button("Submit Question", on_click=choose, type="primary")
+
+# Add a separator for visual clarity
+st.markdown("---")

@@ -1,43 +1,39 @@
-## Titanic Chatbot Testing Questions
+# Titanic Data Visualization Questions
 
-### 📊 Data Visualization (Histogram & Scatter Plot)
-1. Show me a histogram of passenger ages.
-2. Plot a histogram of ticket fares with bins of 10.
-3. Can you display a histogram of the number of survivors?
-4. Show me a scatter plot of passenger age vs fare.
-5. Plot a scatter plot of fare vs passenger class.
-6. Can you plot a scatter plot of age vs survival status?
-7. Display a histogram of male vs female passengers.
-8. Show a histogram of passenger ages grouped by survival status.
+## General Questions
+- What is the age distribution of Titanic passengers?
+- How many passengers embarked from each port?
+- What is the distribution of passengers across different travel classes?
+- How does fare vary among passengers?
+- What is the survival rate based on different factors (age, class, gender, etc.)?
 
----
+## Histogram Questions
+- Show me a histogram of passenger ages.
+- What is the age distribution of survivors vs. non-survivors?
+- Display a histogram comparing the number of passengers in different age groups.
 
-### 🗉️ Data Insights & Queries
-9. How many passengers were on the Titanic?
-10. What was the average age of passengers?
-11. How many male and female passengers were there?
-12. What percentage of passengers survived?
-13. What was the highest and lowest ticket fare?
-14. How many passengers traveled in each class?
-15. Who was the youngest and oldest passenger?
-16. How many children (age < 10) were onboard?
+## Bar Chart Questions
+- Show a bar chart of the number of passengers who embarked from each port.
+- Display a bar chart comparing the number of survivors and non-survivors.
+- How many passengers were in each travel class?
 
----
+## Scatter Plot Questions
+- Show a scatter plot of passenger age vs. fare paid.
+- Display a scatter plot comparing male and female passengers based on age and fare.
+- Plot the survival rate against age.
 
-### 🔎 Specific Queries
-17. Did more men or women survive the Titanic disaster?
-18. Which class had the highest survival rate?
-19. Show me the survival rate by gender.
-20. What was the average fare paid by each class?
-21. Did passengers with family onboard have a higher survival chance?
-22. Which port had the most passengers boarding?
-23. Show the distribution of passengers based on embarkation ports.
-24. What was the survival rate for children?
+## Box Plot Questions
+- Show a box plot of fare distribution across different passenger classes.
+- Display a box plot comparing the fare paid by survivors vs. non-survivors.
+- What does the box plot of age distribution look like?
 
----
+## Pie Chart Questions
+- Show a pie chart of passenger class distribution.
+- Display a pie chart of the survival rate.
+- What is the gender distribution of passengers on the Titanic?
 
-### ⚙️ Testing Edge Cases
-25. Show me a histogram of a non-existent column. *(Should return an error message)*26. Plot a scatter plot of age vs some random variable.
-27. Ask about a missing passenger (e.g., "What was the fare of passenger XYZ?")
-28. Request an invalid number of bins (e.g., "Show me a histogram with -5 bins").
+## Advanced Questions
+- Compare the survival rate among different passenger classes using a grouped bar chart.
+- Show a violin plot of fare distribution.
+- Display a KDE (Kernel Density Estimate) plot of age distribution.
 
