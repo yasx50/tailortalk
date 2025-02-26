@@ -12,7 +12,7 @@ st.set_page_config(layout="centered", page_title="Titanic Story Explorer")
 # API_URL = "https://tailortalk-1gne.onrender.com/req/"  
 API_URL = "http://127.0.0.1:8000/req/"  
 
-st.title("Dive into the Story of the Unsinkable Ship 🚢")
+st.title("Dive into the Story of the Unsinkable Ship 🛳️")
 
 # Create a container for the input section
 input_container = st.container()
@@ -56,7 +56,7 @@ def show_response(api_url, query):
     with response_container:
         if response.status_code == 200:
             data = response.json()  
-            st.write(f"### Response for: {query}")
+            st.write_h( query)
             st.write(data)
         else:
             st.error(f"Failed to fetch data. Status Code: {response.status_code}")
