@@ -68,8 +68,8 @@ def draw_graphs(api_url, query):
     response = requests.get(api_url + query)
     context = detect_chart_type(query)
     
-    print(context)
-    print("Raw API Response:", repr(response.text))
+    # print(context)
+    # print("Raw API Response:", repr(response.text))
 
     with response_container:
         if response.status_code == 200:
@@ -77,9 +77,9 @@ def draw_graphs(api_url, query):
                 data = response.json() if isinstance(response.json(), dict) else json.loads(response.json())
                 
                 # Use expander for raw data to keep UI clean
-                with st.expander("View Raw API Response"):
-                    st.write(data)
-                    st.write(response.headers.get("Content-Type", ""))
+                # with st.expander("View Raw API Response"):
+                #     st.write(data)
+                #     st.write(response.headers.get("Content-Type", ""))
                 
                 st.subheader(f"Visualization: {context.replace('_', ' ').title()}")
                 
